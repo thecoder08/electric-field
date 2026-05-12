@@ -6,8 +6,8 @@
 
 typedef float vec2[2];
 
-#define GRID_HEIGHT 48
-#define GRID_WIDTH 64
+#define GRID_HEIGHT 25
+#define GRID_WIDTH 33
 #define SPACING 20
 
 const float ke = 9e9; // k_e = 9.0 * SPACING^9 Nm^2/C^2
@@ -79,7 +79,7 @@ int main() {
                     potential += (ke * charges[k].charge) / r;
                 }
 
-                int channel = (fabs(potential) / 10000) * 255;
+                int channel = (fabsf(potential) / 10000) * 255;
                 if (channel > 255) channel = 255;
                 if (potential > 0) {
                     plot(j, i, 0xff000000 | (channel << 16));
@@ -109,7 +109,7 @@ int main() {
                     continue;
                 }
                 vec2 normalizedVector = {fieldVector[0]/length*10, fieldVector[1]/length*10};
-                int channel = (fabs(length) / 10) * 255;
+                int channel = (fabsf(length) / 10) * 255;
                 if (channel > 255) channel = 255;
                 line(j * SPACING, i * SPACING, (j * SPACING) + normalizedVector[0], (i * SPACING) + normalizedVector[1], 0xff000000 | (channel << 8));
                 circle((j * SPACING) + normalizedVector[0], (i * SPACING) + normalizedVector[1], 2, 0xff000000 | (channel << 8));
