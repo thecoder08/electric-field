@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas width="640" height="480"></canvas>
+    <script>
+        const canvas = document.querySelector('canvas');
+        canvas.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+        });
+        const ctx = canvas.getContext('2d');
+        const imageData = new ImageData(640, 480);
+        const wasmMemory = new WebAssembly.Memory({ initial: 256 }); // 256 pages = 16MB
+        const stackPointer = new WebAssembly.Global({ value: 'i32', mutable: true }, 65536);
+        const wasmTable = new WebAssembly.Table({
+          element: "anyfunc", // or "funcref" for newer WASM specs
+          initial: 1,         // Initial number of entries
+          maximum: 10         // Optional max
+        });
+        function updateWindow() {
+            ctx.putImageData(imageData, 0, 0);
+        }
+        function clear() {
+            for (let i = 0; i < imageData.data.length; i++) {
+                if (i % 4 == 3) {
+                    imageData.data[i] = 255;
+                    continue;
+                }
+                imageData.data[i] = 0;
+            }
+        }
+        function plot(x, y, color) {
+            if (x < 0 || x >= imageData.width || y < 0 || y > imageData.height) return;
+            const r = (color & 0x00ff0000) >> 16;
+            const g = (color & 0x0000ff00) >> 8;
+            const b = (color & 0x000000ff);
+            imageData.data[(y*imageData.width + x)*4] = r;
+            imageData.data[(y*imageData.width + x)*4+1] = g;
+            imageData.data[(y*imageData.width + x)*4+2] = b;
+        }
+
+        const importObject = {
+            env: {
+                __linear_memory: wasmMemory,
+                __stack_pointer: stackPointer,
+                __indirect_function_table: wasmTable,
+                updateWindow,
+                clear,
+                plot
+             }
+        };
+        WebAssembly.instantiateStreaming(fetch("electricfield.wasm"), importObject).then(function(obj) {
+            obj.instance.exports.draw();
+            canvas.onmousedown = function(event) {
+                obj.instance.exports.mouseclick(event.clientX, event.clientY, event.button);
+            }
+        });
+    </script>
+</body>
+</html>
