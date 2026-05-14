@@ -8,6 +8,9 @@
 <body>
     <canvas width="640" height="480"></canvas>
     <p>Electric field simulation by Lennon McLean.</p>
+    <p>Left click to place a positive charge. Right click to place a negative charge. Click multiple times in the same spot to increase the magnitude of the charge.</p>
+    <p>Background color represents potential/voltage. Red - positive, Blue - negative.</p>
+    <p>Green arrows represent electric field/potential gradient. Brighter = stronger/steeper.</p>
     <script>
         const canvas = document.querySelector('canvas');
         canvas.addEventListener('contextmenu', (event) => {
